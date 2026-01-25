@@ -40,5 +40,15 @@ def string_functions():
     print("Split by space:", s1.split('r'))
     s2 = "   hello world   "
 
+def string_slicing():
+    s1 = "Learning python is good"
+    print(s1)
+    print(s1[0:9])
+    print(s1[::-1])
+    print(s1[::-2])
+
+
+
+string_slicing()
 #string_basic()
-string_functions()
+#string_functions()
