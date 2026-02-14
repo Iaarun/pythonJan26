@@ -36,5 +36,8 @@ k = list(my_dict.keys())
 v = list(my_dict.values())
 sortvalue = np.argsort(v)
 sorted_dict = {k[i]: v[i] for i in sortvalue}
-print(sorted_dict)
+#print(sorted_dict)
+
+
+
 
