@@ -107,19 +107,16 @@ def test_handleCheckBoxAndRadioButton(playwright):
     print("Is the checkbox2 selected: ", checkbox2.is_checked())
     checkbox2.check()
     print("Is the checkbox2 selected: ", checkbox2.is_checked())
-
     checkbox1 = page.locator("#my-check-1")
     print("Is the checkbox1 selected: ", checkbox1.is_checked())
     checkbox1.uncheck()
     print("Is the checkbox1 selected: ", checkbox1.is_checked())
     time.sleep(2)
-
     #radio button
     radiobutton = page.locator('#my-radio-2')
     #check() method will check the radio button if it is not already checked
     radiobutton.click()
     print("is radio button checked", radiobutton.is_checked())
-
     #click on button
     submitbtn=page.locator("[type='submit']")
     submitbtn.click()
@@ -167,6 +164,9 @@ def test_handleDropdownUsingSelect_option2(playwright):
     #select option from dropdown
     #page.select_option("#my-select", "2")
     # selectdropdown=page.locator("[name='my-select']")
+    text_input = page.locator("//input[@id='my-text-id']")
+    text_input.clear()
+    text_input.fill("This is a test for sending data to the input field")
     selectdropdown.select_option(label="Two")
     browser.close()
 
@@ -199,3 +199,87 @@ def test_dragAndDrop(playwright):
      source.drag_to(target)
      time.sleep(5)
      browser.close()
+
+def test_handleAlerts(playwright):
+    print("This function will handle the alerts")
+    browser = playwright.chromium.launch(headless=False)
+    # maximise the browser window
+    context = browser.new_context()
+    page = context.new_page()
+    page.goto("https://bonigarcia.dev/selenium-webdriver-java/dialog-boxes.html")
+    def on_dialog(dialog):
+        print("Dialog message: ", dialog.message)
+        dialog.accept()
+    page.on("dialog", on_dialog)
+    time.sleep(5)
+    page.locator("#my-alert").click()
+    time.sleep(5)
+    browser.close()
+
+def test_handleConfirmationAlert(playwright):
+    print("This function will handle the confirmation alerts")
+    browser = playwright.chromium.launch(headless=False)
+    # maximise the browser window
+    context = browser.new_context()
+    page = context.new_page()
+    page.goto("https://bonigarcia.dev/selenium-webdriver-java/dialog-boxes.html")
+    def on_dialog(dialog):
+        print("Dialog message: ", dialog.message)
+        dialog.dismiss() #dismiss() method will click on the cancel button of the confirmation alert
+    page.on("dialog", on_dialog)
+    page.locator("#my-confirm").click()
+    confirmtext = page.locator("#confirm-text")
+    print("After handling the confirm alert ", confirmtext.text_content())
+    browser.close()
+
+
+def test_handlePromptAlert(playwright):
+    print("This function will handle the prompt alerts")
+    browser = playwright.chromium.launch(headless=False)
+    # maximise the browser window
+    context = browser.new_context()
+    page = context.new_page()
+    page.goto("https://bonigarcia.dev/selenium-webdriver-java/dialog-boxes.html")
+    def on_dialog(dialog):
+        print("Dialog message: ", dialog.message)
+        dialog.accept("My name is Test Java") #accept() method will click on the ok button of the prompt alert and send the text to the input field of the prompt alert
+    page.on("dialog", on_dialog)
+    page.locator("#my-prompt").click()
+    #page.evaluate("prompt('Enter your name:', 'default')") #this will trigger the prompt alert
+    prompttext = page.locator("#prompt-text")
+    print("After handling the prompt alert ", prompttext.text_content())
+    browser.close()
+
+def test_handleCalender(playwright):
+    print("This function will handle the calender")
+    browser = playwright.chromium.launch(headless=False)
+    # maximise the browser window
+    context = browser.new_context()
+    page = context.new_page()
+    page.goto("https://bonigarcia.dev/selenium-webdriver-java/web-form.html")
+    # sending data to calender uaing fill() method
+    # tag should be input
+    # page.locator("#my-date").fill("2024-06-30")
+    # time.sleep(5)
+    # browser.close()
+    calender= page.locator("input[name='my-date']")
+    calender.click()
+    caltext= page.locator("//div[@class='datepicker-days']/table/thead/tr[2]/th[2]").inner_text()
+    print("The month and year displayed in the calender is: ", caltext)
+    month, year= caltext.split()
+    print(f"Month: {month}, Year: {year}")
+    print(type(year))
+    nextYear = int(year) + 1
+    print("Next Year: ", nextYear)
+    while True:
+        if month == "June" and year == str(nextYear):
+            break
+        page.locator("//div[@class='datepicker-days']/table/thead/tr[2]/th[3]").click()
+        caltext = page.locator("//div[@class='datepicker-days']/table/thead/tr[2]/th[2]").text_content()
+        month, year = caltext.split()
+
+    page.locator("//td[normalize-space()='17']").click()
+    time.sleep(5)
+    page.locator("//h1").click()
+    browser.close()
+
