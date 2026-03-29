@@ -1,4 +1,9 @@
+import os.path
+import shutil
 import time
+from datetime import datetime
+from pathlib import Path
+
 from playwright.sync_api import Page
 
 # def test_basicplaywrightfunction(playwright):
@@ -282,4 +287,102 @@ def test_handleCalender(playwright):
     time.sleep(5)
     page.locator("//h1").click()
     browser.close()
+
+
+def test_fileDownoad(playwright):
+    download_dir= Path.cwd()/"downloads"
+    download_dir.mkdir(exist_ok=True, parents=True)
+    if os.path.isdir(download_dir):
+        print("Download directory exists: ", download_dir)
+        shutil.rmtree(download_dir)
+
+    print("This function will handle the file download")
+    browser = playwright.chromium.launch(headless=False)
+    # maximise the browser window
+    context = browser.new_context(accept_downloads=True)
+    page = context.new_page()
+    page.goto("https://letcode.in/file")
+    with page.expect_download() as download_info:
+        page.locator("#xls").first.click()
+    download = download_info.value
+    dest=  download_dir/download.suggested_filename
+    download.save_as(dest)
+    print("File downloaded to: ", dest)
+    assert dest.exists()
+
+
+def test_fileUpload(playwright):
+    print("This function will handle the file upload")
+    download_dir= Path.cwd()/"downloads"
+    filepath= download_dir/"sample.xlsx"
+
+    browser = playwright.chromium.launch(headless=False)
+    # maximise the browser window
+    context = browser.new_context()
+    page = context.new_page()
+    page.goto("https://letcode.in/file")
+    file_input=page.locator("input[type='file']")
+    file_input.set_input_files(filepath)
+    #code for click n submit button if there is any
+    page.wait_for_timeout(5000)
+    browser.close()
+
+def test_captureScreenshot(playwright):
+    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    browser = playwright.chromium.launch(headless=False)
+    # maximise the browser window
+    context = browser.new_context()
+    page = context.new_page()
+    page.goto("https://opensource-demo.orangehrmlive.com/web/index.php/auth/login")
+    page.locator("input[name='username']").fill("Admin")
+    page.locator("input[name='password']").fill("admin12312")
+    page.locator("button[type='submit']").click()
+    page.wait_for_timeout(5000)
+    print("Timestamp for screenshot: ", ts)
+    page.screenshot(path= f"screenshot_{ts}.png", full_page=True)
+    print("Screenshot captured successfully")
+    browser.close()
+
+def test_multipleTabs(playwright):
+    print("This function will handle multiple tabs")
+    browser = playwright.chromium.launch(headless=False)
+    # maximise the browser window
+    context = browser.new_context()
+    page1= context.new_page()
+    page1.goto("https://bonigarcia.dev/selenium-webdriver-java/web-form.html")
+    print("The title of the page is: ", page1.title())
+    page2 = context.new_page()
+    page2.goto("https://jqueryui.com/droppable/")
+    print("The title of the page is: ", page2.title())
+    allpages = context.pages
+    print("All the open tabs are: ")
+    for p in allpages:
+        print(p.url)
+    time.sleep(5)
+    browser.close()
+
+def differentpages(page: Page):
+    page.goto("https://bonigarcia.dev/selenium-webdriver-java/web-form.html")
+    print("The title of the page is: ", page.title())
+    page.goto("https://jqueryui.com/droppable/")
+    print("The title of the page is: ", page.title())
+
+def test_swtichtoNewTab(playwright):
+    browser = playwright.chromium.launch(headless=False)
+    # maximise the browser window
+    context = browser.new_context()
+    page = context.new_page()
+    page.goto("https://example.com/")
+    print("The title of the page is: ", page.url)
+    with context.expect_page() as new_page_info:
+        page.click("//a[normalize-space()='Learn more']", modifiers= ["Control"])
+    page.wait_for_timeout(5000)
+    new_page = new_page_info.value
+    new_page.bring_to_front()
+    print("The title of the new page is: ", new_page.url)
+
+    browser.close()
+
+
+
 
