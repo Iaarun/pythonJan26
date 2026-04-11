@@ -384,5 +384,73 @@ def test_swtichtoNewTab(playwright):
     browser.close()
 
 
+# python
+import time
+from playwright.sync_api import Page
 
+def test_move_slider_by_500px(playwright):
+    browser = playwright.chromium.launch(headless=False)
+    context = browser.new_context()
+    page = context.new_page()
+    try:
+        page.goto("https://jqueryui.com/slider/")
+        page.wait_for_load_state("networkidle")
+
+        # switch to demo iframe
+        frame = page.frame_locator(".demo-frame")
+        handle = frame.locator(".ui-slider-handle")
+        handle.wait_for(state="visible", timeout=5000)
+
+        # get starting center coordinates
+        box = handle.bounding_box()
+        assert box, "Could not determine handle bounding box"
+        start_x = box["x"] + box["width"] / 2
+        start_y = box["y"] + box["height"] / 2
+
+        # perform drag by 500px to the right
+        page.mouse.move(start_x, start_y)
+        page.mouse.down()
+        page.mouse.move(start_x + 500, start_y, steps=15)
+        page.mouse.up()
+
+        time.sleep(0.5)  # allow UI to settle
+        # verify movement
+        new_box = handle.bounding_box()
+        assert new_box, "Could not determine new handle bounding box"
+        moved_px = (new_box["x"] + new_box["width"] / 2) - start_x
+        print(f"Moved by: {moved_px:.1f}px")
+
+    finally:
+        browser.close()
+
+
+def test_automsuggestion(playwright):
+    browser = playwright.chromium.launch(headless=False)
+    context = browser.new_context()
+    page = context.new_page()
+    try:
+        page.goto("https://opensource-demo.orangehrmlive.com/web/index.php/auth/login")
+        page.locator("input[name='username']").fill("Admin")
+        page.locator("input[name='password']").fill("admin123")
+        page.locator("button[type='submit']").click()
+        page.wait_for_timeout(5000)
+        page.locator("//a[@class='oxd-main-menu-item active']//span[1]").click()
+        page.wait_for_timeout(2000)
+       #click on Add button
+        page.locator("//button[normalize-space()='Add']").click()
+        page.wait_for_timeout(2000)
+        #enter the name in the input field
+        page.locator(".oxd-autocomplete-text-input oxd-autocomplete-text-input--active").fill("Test")
+        page.wait_for_timeout(2000)
+        #get all suggestions from the
+        #suggestions = page.locator(".oxd-autocomplete-text-input oxd-autocomplete-text-input--active").all()
+        suggestions = page.query_selector_all(".oxd-autocomplete-text-input oxd-autocomplete-text-input--active")
+        for item in suggestions:
+            if "Orange Test" in item.text_content():
+                item.click()
+                break
+        time.sleep(5)
+
+    finally:
+        browser.close()
 
